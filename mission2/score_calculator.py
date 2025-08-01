@@ -5,7 +5,7 @@ from mission2.wed_score_strategy import WeekendScoreStrategy
 from mission2.weekend_score_strategy import WedScoreStrategy
 
 
-def get_strategy_from_day(day: str) -> BaseScoreStrategy:
+def get_score_strategy_from_day(day: str) -> BaseScoreStrategy:
     if day == Weekday.WEDNESDAY.value:
         return WedScoreStrategy()
     elif day == Weekday.SATURDAY.value or day == Weekday.SUNDAY.value:

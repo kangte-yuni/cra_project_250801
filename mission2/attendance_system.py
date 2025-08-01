@@ -1,14 +1,17 @@
 from mission2.day import Weekday
+from mission2.default_grade_strategy import DefaultGradeStrategy
 from mission2.default_score_strategy import DefaultScoreStrategy
 from mission2.grade import Grade
+from mission2.grade_calculator import GradeCalculator, get_grade_strategy
 from mission2.player import Player
-from mission2.score_calculator import ScoreCalculator, get_strategy_from_day
+from mission2.score_calculator import ScoreCalculator, get_score_strategy_from_day
 
 
 class AttendanceSystem:
     def __init__(self):
         self._player_info_dict = dict()
         self._score_calculator = ScoreCalculator(strategy= DefaultScoreStrategy())
+        self._grade_calculator = GradeCalculator(strategy= DefaultGradeStrategy())
 
     def get_player_info_dict(self) -> dict:
         return self._player_info_dict
@@ -58,19 +61,16 @@ class AttendanceSystem:
     def calculate_score_for_player(self, player_name: str):
         player = self.get_player(player_name)
         for day, counts in player.get_attendance_counts().items():
-            self._score_calculator.set_strategy(get_strategy_from_day(day))
+            self._score_calculator.set_strategy(get_score_strategy_from_day(day))
             score = self._score_calculator.calculate(counts)
             player.add_score(score)
         self._add_bonus_for_player(player_name)
 
     def calculate_grade_for_player(self, player_name: str):
         player = self.get_player(player_name)
-        if player.get_score() >= 50:
-            player.set_grade(Grade.GOLD)
-        elif player.get_score() >= 30:
-            player.set_grade(Grade.SILVER)
-        else:
-            player.set_grade(Grade.NORMAL)
+        self._grade_calculator.set_strategy(get_grade_strategy())
+        grade = self._grade_calculator.calculate(player.get_score())
+        player.set_grade(grade)
 
 
     def _add_bonus_for_player(self, player_name: str):
