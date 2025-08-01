@@ -37,9 +37,3 @@ def test_is_attend_on_wed_or_weekend_월요일1번토요일1번_RETURN_TRUE():
     player.attend(day=Weekday.SATURDAY.value)
 
     assert player.is_attend_on_wed_or_weekend() == True
-    
-def test_add_score():
-    player = Player(player_id=1, name="홍길동")
-
-    player.add_score(5)
-    assert player.get_score() == 5

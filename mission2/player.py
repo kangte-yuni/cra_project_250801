@@ -10,6 +10,26 @@ class Player:
         self._grade = Grade.NORMAL
         self._attend_counts = dict()
 
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def score(self) -> int:
+        return self._score
+
+    @score.setter
+    def score(self, score: int):
+        self._score = score
+
+    @property
+    def grade(self) -> Grade:
+        return self._grade
+
+    @grade.setter
+    def grade(self, grade: Grade):
+        self._grade = grade
+
     def attend(self, day:str):
         if not day in self._attend_counts:
             self._attend_counts[day] = 0
@@ -27,17 +47,3 @@ class Player:
     def get_attendance_counts_per_day(self, day: str):
         return self._attend_counts.get(day, 0)
 
-    def add_score(self, score: int):
-        self._score += score
-
-    def get_score(self):
-        return self._score
-
-    def get_grade(self):
-        return self._grade
-
-    def set_grade(self, grade: Grade):
-        self._grade = grade
-
-    def get_id(self):
-        return self._id

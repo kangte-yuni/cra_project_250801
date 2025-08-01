@@ -1,5 +1,4 @@
 import pytest
-import sys, io
 
 from mission2.attendance_system import AttendanceSystem
 from mission2.day import Weekday
@@ -54,8 +53,8 @@ def test_calculate_score_and_grade(input_day_list, expected_result):
 
     # Assert
     player = sut.get_player(player_name)
-    assert player.get_score() == expected_result[0]
-    assert player.get_grade() == expected_result[1]
+    assert player.score == expected_result[0]
+    assert player.grade == expected_result[1]
 
 def test_get_player_시스템에등록되지않은PLAYER():
     player_name = "홍길동"
@@ -87,7 +86,7 @@ def test_set_score_for_player(input_day_list, expected_score):
 
     # Assert
     player = sut.get_player(player_name)
-    assert player.get_score() == expected_score
+    assert player.score == expected_score
 
 @pytest.mark.parametrize("score, expected_grade", [
     (50, Grade.GOLD), (30, Grade.SILVER), (10, Grade.NORMAL)
@@ -96,7 +95,7 @@ def test_get_grade_for_player(mocker, score, expected_grade):
     # Arrange
     player_name = "홍길동"
     player = Player(player_id=1, name=player_name)
-    player.add_score(score)
+    player.score = score
 
     sut = AttendanceSystem()
     mocker.patch.object(sut, "get_player", return_value = player)
@@ -105,7 +104,7 @@ def test_get_grade_for_player(mocker, score, expected_grade):
     sut.calculate_grade_for_player(player_name= player_name)
 
     # Assert
-    assert player.get_grade() == expected_grade
+    assert player.grade == expected_grade
 
 def test_print_all_player_status(mocker, capfd):
     # Arrange
@@ -116,12 +115,12 @@ def test_print_all_player_status(mocker, capfd):
         "이순신": player_2
     }
 
-    mocker.patch.object(player_1, "get_score", return_value = 50)
-    mocker.patch.object(player_1, "get_grade", return_value = Grade.GOLD)
+    player_1.score = 50
+    player_1.grade = Grade.GOLD
     mocker.patch.object(player_1, "is_attend_on_wed_or_weekend", return_value = True)
 
-    mocker.patch.object(player_2, "get_score", return_value = 5)
-    mocker.patch.object(player_2, "get_grade", return_value = Grade.NORMAL)
+    player_2.score = 5
+    player_2.grade = Grade.NORMAL
     mocker.patch.object(player_2, "is_attend_on_wed_or_weekend", return_value = False)
 
     sut = AttendanceSystem()
@@ -146,7 +145,7 @@ def test_check_remove_player(mocker, grade, attend_status, expected_result):
     player_name = "홍길동"
     player = Player(1, player_name)
 
-    mocker.patch.object(player, "get_grade", return_value = grade)
+    player.grade = grade
     mocker.patch.object(player, "is_attend_on_wed_or_weekend", return_value = attend_status)
 
     sut = AttendanceSystem()

@@ -37,10 +37,10 @@ class AttendanceSystem:
             self.calculate_grade_for_player(player_name)
 
     def print_all_player_status(self):
-        sorted_player_name_by_id = sorted(self.get_player_info_dict().items(), key=lambda x: x[1].get_id())
+        sorted_player_name_by_id = sorted(self.get_player_info_dict().items(), key=lambda x: x[1].id)
         for player_name, player in sorted_player_name_by_id:
-            points = player.get_score()
-            grade = player.get_grade()
+            points = player.score
+            grade = player.grade
 
             print(f"NAME : {player_name}, POINT : {points}, GRADE : {grade.value}", )
 
@@ -52,7 +52,7 @@ class AttendanceSystem:
 
     def check_remove_player(self, player_name: str):
         player: Player = self.get_player(player_name)
-        if player.get_grade() != Grade.NORMAL:
+        if player.grade != Grade.NORMAL:
             return False
         if player.is_attend_on_wed_or_weekend():
             return False
@@ -60,20 +60,22 @@ class AttendanceSystem:
 
     def calculate_score_for_player(self, player_name: str):
         player = self.get_player(player_name)
+        total_score = 0
         for day, counts in player.get_attendance_counts().items():
             self._score_calculator.set_strategy(get_score_strategy_from_day(day))
-            score = self._score_calculator.calculate(counts)
-            player.add_score(score)
-        self._add_bonus_for_player(player_name)
+            total_score += self._score_calculator.calculate(counts)
+            # player.add_score(score)
+        total_score += self.get_bonus_for_player(player_name)
+        player.score = total_score
 
     def calculate_grade_for_player(self, player_name: str):
         player = self.get_player(player_name)
         self._grade_calculator.set_strategy(get_grade_strategy())
-        grade = self._grade_calculator.calculate(player.get_score())
-        player.set_grade(grade)
+        grade = self._grade_calculator.calculate(player.score)
+        player.grade = grade
 
 
-    def _add_bonus_for_player(self, player_name: str):
+    def get_bonus_for_player(self, player_name: str):
         player = self.get_player(player_name)
         bonus = 0
         if player.get_attendance_counts_per_day(Weekday.WEDNESDAY.value) >= 10:
@@ -81,7 +83,7 @@ class AttendanceSystem:
         if player.get_attendance_counts_per_day(Weekday.SATURDAY.value) + \
                 player.get_attendance_counts_per_day(Weekday.SUNDAY.value) >= 10:
             bonus += 10
-        player.add_score(bonus)
+        return bonus
 
 
 
