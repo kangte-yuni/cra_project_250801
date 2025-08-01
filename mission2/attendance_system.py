@@ -1,16 +1,17 @@
 from mission2.day import Weekday
+from mission2.default_bonus_strategy import DefaultBonusStrategy
 from mission2.default_grade_strategy import DefaultGradeStrategy
 from mission2.default_score_strategy import DefaultScoreStrategy
 from mission2.grade import Grade
 from mission2.grade_calculator import GradeCalculator, get_grade_strategy
 from mission2.player import Player
-from mission2.score_calculator import ScoreCalculator, get_score_strategy_from_day
+from mission2.score_calculator import ScoreCalculator, get_score_strategy_from_day, get_bonus_strategy
 
 
 class AttendanceSystem:
     def __init__(self):
         self._player_info_dict = dict()
-        self._score_calculator = ScoreCalculator(strategy= DefaultScoreStrategy())
+        self._score_calculator = ScoreCalculator(strategy= DefaultScoreStrategy(), bonus_strategy= DefaultBonusStrategy())
         self._grade_calculator = GradeCalculator(strategy= DefaultGradeStrategy())
 
     def get_player_info_dict(self) -> dict:
@@ -64,8 +65,10 @@ class AttendanceSystem:
         for day, counts in player.get_attendance_counts().items():
             self._score_calculator.set_strategy(get_score_strategy_from_day(day))
             total_score += self._score_calculator.calculate(counts)
-            # player.add_score(score)
-        total_score += self.get_bonus_for_player(player_name)
+
+        self._score_calculator.set_bonus_strategy(get_bonus_strategy())
+        total_score += self._score_calculator.calculate_bonus(player)
+
         player.score = total_score
 
     def calculate_grade_for_player(self, player_name: str):
@@ -73,19 +76,6 @@ class AttendanceSystem:
         self._grade_calculator.set_strategy(get_grade_strategy())
         grade = self._grade_calculator.calculate(player.score)
         player.grade = grade
-
-
-    def get_bonus_for_player(self, player_name: str):
-        player = self.get_player(player_name)
-        bonus = 0
-        if player.get_attendance_counts_per_day(Weekday.WEDNESDAY.value) >= 10:
-            bonus += 10
-        if player.get_attendance_counts_per_day(Weekday.SATURDAY.value) + \
-                player.get_attendance_counts_per_day(Weekday.SUNDAY.value) >= 10:
-            bonus += 10
-        return bonus
-
-
 
 
 
