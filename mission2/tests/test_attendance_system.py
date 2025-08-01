@@ -83,7 +83,7 @@ def test_set_score_for_player(input_day_list, expected_score):
     for idx, day in enumerate(input_day_list):
         sut.update_attendance_for_player(idx=idx, player_name=player_name, day=day)
     # Act
-    sut.set_score_for_player(player_name)
+    sut.calculate_score_for_player(player_name)
 
     # Assert
     player = sut.get_player(player_name)
@@ -102,7 +102,7 @@ def test_get_grade_for_player(mocker, score, expected_grade):
     mocker.patch.object(sut, "get_player", return_value = player)
 
     # Act
-    sut.set_grade_for_player(player_name= player_name)
+    sut.calculate_grade_for_player(player_name= player_name)
 
     # Assert
     assert player.get_grade() == expected_grade

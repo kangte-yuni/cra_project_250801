@@ -27,8 +27,8 @@ class AttendanceSystem:
 
     def calculate_score_and_grade(self):
         for player_name in self.get_player_info_dict():
-            self.set_score_for_player(player_name)
-            self.set_grade_for_player(player_name)
+            self.calculate_score_for_player(player_name)
+            self.calculate_grade_for_player(player_name)
 
     def print_all_player_status(self):
         sorted_player_name_by_id = sorted(self.get_player_info_dict().items(), key=lambda x: x[1].get_id())
@@ -52,7 +52,7 @@ class AttendanceSystem:
             return False
         return True
 
-    def set_score_for_player(self, player_name: str):
+    def calculate_score_for_player(self, player_name: str):
         player = self.get_player(player_name)
         for day, counts in player.get_attendance_counts().items():
             if day == Weekday.WEDNESDAY.value:
@@ -65,7 +65,7 @@ class AttendanceSystem:
             player.add_score(weights * counts)
         self._add_bonus_for_player(player_name)
 
-    def set_grade_for_player(self, player_name: str):
+    def calculate_grade_for_player(self, player_name: str):
         player = self.get_player(player_name)
         if player.get_score() >= 50:
             player.set_grade(Grade.GOLD)
