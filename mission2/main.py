@@ -1,3 +1,6 @@
+from mission2.attendance_system import AttendanceSystem
+
+
 def read_input_file(file_path : str):
     try:
         data = []
@@ -14,12 +17,13 @@ def read_input_file(file_path : str):
 def run():
     input_file_path = "attendance_weekday_500.txt"
     input_data = read_input_file(file_path = input_file_path)
-    print(input_data)
-    # all_player_info_dict = dict()
-    # for idx, parts in enumerate(input_data):
-    #     make_player_info(player_id= idx, player_name= parts[0], day= parts[1], all_player_info_dict= all_player_info_dict)
-    # make_final_points_and_grade(all_player_info_dict= all_player_info_dict)
-    # print_result(all_player_info_dict= all_player_info_dict)
+    attend_system = AttendanceSystem()
+
+    for idx, parts in enumerate(input_data):
+        attend_system.update_attendance_for_player(idx = idx, player_name = parts[0], day = parts[1])
+
+    attend_system.calculate_score_and_grade()
+    attend_system.print_all_player_status()
 
 if __name__ == "__main__":
     run()
