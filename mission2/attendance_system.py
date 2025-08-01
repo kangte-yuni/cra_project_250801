@@ -1,11 +1,14 @@
 from mission2.day import Weekday
+from mission2.default_score_strategy import DefaultScoreStrategy
 from mission2.grade import Grade
 from mission2.player import Player
+from mission2.score_calculator import ScoreCalculator, get_strategy_from_day
 
 
 class AttendanceSystem:
     def __init__(self):
         self._player_info_dict = dict()
+        self._score_calculator = ScoreCalculator(strategy= DefaultScoreStrategy())
 
     def get_player_info_dict(self) -> dict:
         return self._player_info_dict
@@ -55,14 +58,9 @@ class AttendanceSystem:
     def calculate_score_for_player(self, player_name: str):
         player = self.get_player(player_name)
         for day, counts in player.get_attendance_counts().items():
-            if day == Weekday.WEDNESDAY.value:
-                weights = 3
-            elif day == Weekday.SATURDAY.value or day == Weekday.SUNDAY.value:
-                weights = 2
-            else:
-                weights = 1
-
-            player.add_score(weights * counts)
+            self._score_calculator.set_strategy(get_strategy_from_day(day))
+            score = self._score_calculator.calculate(counts)
+            player.add_score(score)
         self._add_bonus_for_player(player_name)
 
     def calculate_grade_for_player(self, player_name: str):
