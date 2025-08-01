@@ -1,95 +1,110 @@
-id1 = {}
-id_cnt = 0
+NORMAL = "NORMAL"
+SILVER = "SILVER"
+GOLD = "GOLD"
+GRADE = "grade"
+ATTEND_COUNTS = "attend_counts"
+ATTEND_ON_WEEKEND = "is_attend_on_weekend"
+ATTEND_ON_WED = "is_attend_on_wed"
+POINTS = "points"
+PLAYER_ID = "id"
 
-# dat[사용자ID][요일]
-dat = [[0] * 100 for _ in range(100)]
-points = [0] * 100
-grade = [0] * 100
-names = [''] * 100
-wed = [0] * 100
-weeken = [0] * 100
+SUNDAY = "sunday"
+SATURDAY = "saturday"
+FRIDAY = "friday"
+THURSDAY = "thursday"
+WEDNESDAY = "wednesday"
+TUESDAY = "tuesday"
+MONDAY = "monday"
 
-def input2(w, wk):
-    global id_cnt
 
-    if w not in id1:
-        id_cnt += 1
-        id1[w] = id_cnt
-        names[id_cnt] = w
+def make_player_info(player_id: int, player_name: str, day: str, all_player_info_dict: dict):
+    if not day in [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]:
+        print("유효 하지 않은 요일이 입력됨.")
+        return
 
-    id2 = id1[w]
+    if player_name not in all_player_info_dict:
+        all_player_info_dict[player_name] = {
+            PLAYER_ID: player_id,
+            POINTS: 0,
+            ATTEND_ON_WED: False,
+            ATTEND_ON_WEEKEND: False,
+            ATTEND_COUNTS: {MONDAY:0, TUESDAY:0, WEDNESDAY:0, THURSDAY:0, FRIDAY:0, SATURDAY:0, SUNDAY:0}
+        }
 
-    add_point = 0
-    index = 0
+    if day == WEDNESDAY:
+        add_points = 3
+        all_player_info_dict[player_name][ATTEND_ON_WED] = True
+    elif day == SATURDAY or day == SUNDAY:
+        add_points = 2
+        all_player_info_dict[player_name][ATTEND_ON_WEEKEND] = True
+    else:
+        add_points = 1
 
-    if wk == "monday":
-        index = 0
-        add_point += 1
-    elif wk == "tuesday":
-        index = 1
-        add_point += 1
-    elif wk == "wednesday":
-        index = 2
-        add_point += 3
-        wed[id2] += 1
-    elif wk == "thursday":
-        index = 3
-        add_point += 1
-    elif wk == "friday":
-        index = 4
-        add_point += 1
-    elif wk == "saturday":
-        index = 5
-        add_point += 2
-        weeken[id2] += 1
-    elif wk == "sunday":
-        index = 6
-        add_point += 2
-        weeken[id2] += 1
+    all_player_info_dict[player_name][POINTS] += add_points
+    all_player_info_dict[player_name][ATTEND_COUNTS][day] += 1
 
-    dat[id2][index] += 1
-    points[id2] += add_point
+def make_final_points_and_grade(all_player_info_dict: dict):
+    for play_name, player_info in all_player_info_dict.items():
+        player_info[POINTS] += get_bonus(player_info)
+        player_info[GRADE] = get_grade(player_info)
 
-def input_file():
+def get_bonus(player_info: dict):
+    bonus = 0
+    if player_info[ATTEND_COUNTS][WEDNESDAY] >= 10:
+        bonus += 10
+    if player_info[ATTEND_COUNTS][SATURDAY] + player_info[ATTEND_COUNTS][SUNDAY] >= 10:
+        bonus += 10
+    return bonus
+
+def get_grade(player_info: dict):
+    if player_info[POINTS] >= 50:
+        return GOLD
+    if player_info[POINTS] >= 30:
+        return SILVER
+    return NORMAL
+
+def read_input_file(file_path : str):
     try:
-        with open("attendance_weekday_500.txt", encoding='utf-8') as f:
-            for _ in range(500):
-                line = f.readline()
-                if not line:
-                    break
+        data = []
+        with open(file_path, encoding='utf-8') as f:
+            lines = f.readlines()
+            for line in lines:
                 parts = line.strip().split()
                 if len(parts) == 2:
-                    input2(parts[0], parts[1])
-
-        for i in range(1, id_cnt + 1):
-            if dat[i][3] > 9:
-                points[i] += 10
-            if dat[i][5] + dat[i][6] > 9:
-                points[i] += 10
-
-            if points[i] >= 50:
-                grade[i] = 1
-            elif points[i] >= 30:
-                grade[i] = 2
-            else:
-                grade[i] = 0
-
-            print(f"NAME : {names[i]}, POINT : {points[i]}, GRADE : ", end="")
-            if grade[i] == 1:
-                print("GOLD")
-            elif grade[i] == 2:
-                print("SILVER")
-            else:
-                print("NORMAL")
-
-        print("\nRemoved player")
-        print("==============")
-        for i in range(1, id_cnt + 1):
-            if grade[i] not in (1, 2) and wed[i] == 0 and weeken[i] == 0:
-                print(names[i])
-
+                    data.append(parts)
+        return data
     except FileNotFoundError:
         print("파일을 찾을 수 없습니다.")
 
+def print_result(all_player_info_dict : dict):
+    sorted_player_name_by_id = sorted(all_player_info_dict.items(), key=lambda player: player[1][PLAYER_ID])
+
+    for player_name, player_info in sorted_player_name_by_id:
+        points = player_info.get(POINTS)
+        grade = player_info.get(GRADE)
+        print(f"NAME : {player_name}, POINT : {points}, GRADE : {grade}",)
+
+    print("\nRemoved player")
+    print("==============")
+    for player_name, player_info in sorted_player_name_by_id:
+        if is_removed_player(player_info):
+            print(player_name)
+
+
+def is_removed_player(player_info : dict):
+    if player_info[GRADE] == NORMAL and \
+            (player_info[ATTEND_ON_WED] == False and player_info[ATTEND_ON_WEEKEND] == False):
+        return True
+    return False
+
+def run():
+    input_file_path = "attendance_weekday_500.txt"
+    input_data = read_input_file(file_path = input_file_path)
+    all_player_info_dict = dict()
+    for idx, parts in enumerate(input_data):
+        make_player_info(player_id= idx, player_name= parts[0], day= parts[1], all_player_info_dict= all_player_info_dict)
+    make_final_points_and_grade(all_player_info_dict= all_player_info_dict)
+    print_result(all_player_info_dict= all_player_info_dict)
+
 if __name__ == "__main__":
-    input_file()
+    run()
